@@ -150,8 +150,8 @@ const renderParties = async (parties) => {
 };
 
 // init function
-const init = async () => {
-  const init = async () => {
+
+ const init = async () => {
     try {
       const parties = await getAllParties();
       renderParties(parties);
@@ -160,7 +160,6 @@ const init = async () => {
     }
   };
 init();
-
 
 
   
