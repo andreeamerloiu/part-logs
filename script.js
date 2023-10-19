@@ -22,7 +22,7 @@ const getAllParties = async () => {
 // get single party by id
 const getPartyById = async (id) => {
   try {
-    const response = await fetch(`${PARTIES_API_URL}/${id}`);
+    const response = await fetch(`${PARTIES_API_URL}/${id}`)
     const party = await response.json();
     return party;
   } catch (error) {
@@ -32,13 +32,16 @@ const getPartyById = async (id) => {
 
 // delete party
 const deleteParty = async (id) => {
-  deleteButton.addEventListener('click', async (event) => {
-    const partyId = event.target.getAttribute('data-id');
-    await deleteParty(partyId);
-    // After deletion, you might want to refresh the parties list.
-    const updatedParties = await getAllParties();
-    renderParties(updatedParties);
-  });
+  try {
+    const response = await fetch(`${PARTIES_API_URL}/${id}`,
+    {method: 'DELETE',})
+    const result = await response.json();
+    console.log('deleted party:', result);
+    const parties = await getAllParties();
+    renderParties(parties);
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 // render a single party by id
@@ -56,18 +59,18 @@ const renderSinglePartyById = async (id) => {
     const rsvps = await rsvpsResponse.json();
 
     // GET - get all gifts by party id - /api/workshop/parties/gifts/:partyId -BUGGY?
-    const giftsResponse = await fetch(`${PARTIES_API_URL}/party/gifts/${id}`);
-    const gifts = await giftsResponse.json();
+    // const giftsResponse = await fetch(`${PARTIES_API_URL}/party/gifts/${id}`);
+    // const gifts = await giftsResponse.json();
 
     // create new HTML element to display party details
     const partyDetailsElement = document.createElement('div');
     partyDetailsElement.classList.add('party-details');
     partyDetailsElement.innerHTML = `
             <h2>${party.name}</h2>
-            <p>${party.description}</p>
             <p>${party.date}</p>
             <p>${party.time}</p>
             <p>${party.location}</p>
+            <p>${party.description}</p>
             <h3>Guests:</h3>
             <ul>
             ${guests
@@ -90,7 +93,8 @@ const renderSinglePartyById = async (id) => {
 
     // add event listener to close button
     const closeButton = partyDetailsElement.querySelector('.close-button');
-    closeButton.addEventListener('click', () => {
+    closeButton.addEventListener('click', (e) => {
+      e.preventDefault();
       partyDetailsElement.remove();
     });
   } catch (error) {
@@ -119,29 +123,17 @@ const renderParties = async (parties) => {
       // see details
       const detailsButton = partyElement.querySelector('.details-button');
       detailsButton.addEventListener('click', async (event) => {
-        detailsButton.addEventListener('click', async (event) => {
-          const partyId = event.target.getAttribute('data-id');
-          await renderSinglePartyById(partyId);
-        });
+        event.preventDefault();
+        console.log(event)
+        const partyId = event.target.dataset.id;
+        await renderSinglePartyById(partyId);
       });
 
       // delete party
       const deleteButton = partyElement.querySelector('.delete-button');
       deleteButton.addEventListener('click', async (event) => {
-        const deleteParty = async (id) => {
-          try {
-            const response = await fetch(`${PARTIES_API_URL}/${id}`, {
-              method: 'DELETE',
-            });
-            if (response.ok) {
-              console.log('Party deleted successfully');
-            } else {
-              console.error('Failed to delete party:', response.statusText);
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        };
+        event.preventDefault();
+        deleteParty(party.id);
       });
     });
   } catch (error) {
@@ -150,16 +142,14 @@ const renderParties = async (parties) => {
 };
 
 // init function
-
- const init = async () => {
-    try {
-      const parties = await getAllParties();
-      renderParties(parties);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-init();
+const init = async () => {
+  try {
+  const parties = await getAllParties(); 
+  await renderParties(parties);
+  } catch(error) {
+  console.error(error);
+  }
+};
 
 
   
